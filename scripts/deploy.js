@@ -1,31 +1,34 @@
-// We require the Hardhat Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-//
-// You can also run a script with `npx hardhat run <script>`. If you do that, Hardhat
-// will compile your contracts, add the Hardhat Runtime Environment's members to the
-// global scope, and execute the script.
-const hre = require("hardhat");
+/*For Uniswap contract*/
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
-  const unlockTime = currentTimestampInSeconds + ONE_YEAR_IN_SECS;
+  // We get the contract to deploy
 
-  const lockedAmount = hre.ethers.utils.parseEther("1");
+  const [deployer] = await ethers.getSigners();
+  console.log("Deployer: ", await deployer.address);
+  const construct = await deployer.address;
 
-  const Lock = await hre.ethers.getContractFactory("Lock");
-  const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
+  //For Core contract
+  const core = await ethers.getContractFactory("UniswapV2Factory");
+  const factory = await core.deploy(construct);
+  console.log("Core contract[Factory] deployed to:", factory.address);
+  const hash = await factory.INIT_CODE_HASH();
+  console.log("INIT_CODE_HASH: ", hash);
 
-  await lock.deployed();
-
-  console.log(
-    `Lock with 1 ETH and unlock timestamp ${unlockTime} deployed to ${lock.address}`
-  );
+  //For Periphery contract
+  const periphery = await ethers.getContractFactory("UniswapV2Router02");
+  const WETH = "0x890df082cEEf5c6a6c8eDeFec6DCe107A7afCDae"; 
+  const peripheryContracts = await periphery.deploy(factory.address, WETH);
+  console.log("Periphery[RouterV2] contract deployed to:", peripheryContracts.address);
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+
+
+
+
+
