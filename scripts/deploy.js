@@ -14,10 +14,12 @@ async function main() {
   const hash = await factory.INIT_CODE_HASH();
   console.log("INIT_CODE_HASH: ", hash);
 
+  const WETH = await ethers.getContractFactory("WETH9");
+  const weth = await WETH.deploy();
+
   //For Periphery contract
   const periphery = await ethers.getContractFactory("UniswapV2Router02");
-  const WETH = "0x890df082cEEf5c6a6c8eDeFec6DCe107A7afCDae"; 
-  const peripheryContracts = await periphery.deploy(factory.address, WETH);
+  const peripheryContracts = await periphery.deploy(factory.address, weth.address);
   console.log("Periphery[RouterV2] contract deployed to:", peripheryContracts.address);
 }
 
