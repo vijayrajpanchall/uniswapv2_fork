@@ -335,7 +335,7 @@ describe.only("Router", function () {
         expect(pairBbalance.toString()).to.equal(ethers.utils.parseEther("900").toString());
     });
 
-    it.only("Should swap swapTokensForExactTokens in path[3] and check treasury balance", async () => {
+    it("Should swap swapTokensForExactTokens in path[3] and check treasury balance", async () => {
         const tokenA = await ethers.getContractFactory("ERC20");
         const tokenB = await ethers.getContractFactory("DeflatingERC20");
         const tokenC = await ethers.getContractFactory("DeflatingERC20");

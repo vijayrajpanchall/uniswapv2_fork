@@ -293,7 +293,6 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         //transfering treasuryFee to treasury address
         address treasury = IUniswapV2Factory(factory).treasury();
         IWETH(WETH).transfer(treasury, treasuryFee);
-        console.log("treasury fee done ", treasuryFee);
         assert(IWETH(WETH).transfer(UniswapV2Library.pairFor(factory, path[0], path[1]), amounts[0].sub(treasuryFee)));//
         _swap(amounts, path, to);
     }
