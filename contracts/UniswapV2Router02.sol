@@ -12,24 +12,47 @@ import './interfaces/IWETH.sol';
 contract UniswapV2Router02 is IUniswapV2Router02 {
     using SafeMath for uint;
 
+    //factory address
     address public immutable override factory;
+    //WETH address
     address public immutable override WETH;
 
+    //modifier to check if deadline is expired
     modifier ensure(uint deadline) {
         require(deadline >= block.timestamp, 'UniswapV2Router: EXPIRED');
         _;
     }
 
+    /**
+     * @dev Constructor function
+     * @param _factory address of the factory
+     * @param _WETH address of the WETH
+     */
     constructor(address _factory, address _WETH) public {
         factory = _factory;
         WETH = _WETH;
     }
 
+    /**
+     * @dev receive function to receive ETH
+     * @dev revert if sender is not WETH
+     */
     receive() external payable {
         assert(msg.sender == WETH); // only accept ETH via fallback from the WETH contract
     }
 
     // **** ADD LIQUIDITY ****
+    /**
+     * @dev function to add liquidity
+     * @param tokenA address of the tokenA
+     * @param tokenB address of the tokenB
+     * @param amountADesired amount of tokenA desired
+     * @param amountBDesired amount of tokenB desired
+     * @param amountAMin minimum amount of tokenA
+     * @param amountBMin minimum amount of tokenB
+     * @return amountA amount of tokenA
+     * @return amountB amount of tokenB
+     */
     function _addLiquidity(
         address tokenA,
         address tokenB,
@@ -58,6 +81,21 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
             }
         }
     }
+
+    /**
+     * @dev function to add liquidity
+     * @param tokenA address of the tokenA to add liquidity
+     * @param tokenB address of the tokenB to add liquidity
+     * @param amountADesired amount of tokenA desired 
+     * @param amountBDesired amount of tokenB desired
+     * @param amountAMin minimum amount of tokenA
+     * @param amountBMin minimum amount of tokenB
+     * @param to address to send liquidity to
+     * @param deadline deadline for the transaction
+     * @return amountA amount of tokenA
+     * @return amountB amount of tokenB
+     * @return liquidity amount of liquidity
+     */
     function addLiquidity(
         address tokenA,
         address tokenB,
@@ -74,6 +112,20 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         TransferHelper.safeTransferFrom(tokenB, msg.sender, pair, amountB);
         liquidity = IUniswapV2Pair(pair).mint(to);
     }
+
+    /**
+     * @dev function to add liquidity with ETH
+     * @param token address of the token to add liquidity
+     * @param amountTokenDesired amount of token desired
+     * @param amountTokenMin minimum amount of token
+     * @param amountETHMin minimum amount of ETH
+     * @param to address to send liquidity to
+     * @param deadline deadline for the transaction
+     * @return amountToken amount of token
+     * @return amountETH amount of ETH
+     * @return liquidity amount of liquidity
+     * @dev amountETH is the amount of ETH sent with the transaction
+     */
     function addLiquidityETH(
         address token,
         uint amountTokenDesired,
@@ -100,6 +152,18 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
     }
 
     // **** REMOVE LIQUIDITY ****
+    /**
+     * @dev function to remove liquidity
+     * @param tokenA address of the tokenA to remove liquidity
+     * @param tokenB address of the tokenB to remove liquidity
+     * @param liquidity amount of liquidity to remove
+     * @param amountAMin minimum amount of tokenA
+     * @param amountBMin minimum amount of tokenB
+     * @param to address to send tokens to
+     * @param deadline deadline for the transaction
+     * @return amountA amount of tokenA
+     * @return amountB amount of tokenB
+     */
     function removeLiquidity(
         address tokenA,
         address tokenB,
@@ -117,6 +181,18 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         require(amountA >= amountAMin, 'UniswapV2Router: INSUFFICIENT_A_AMOUNT');
         require(amountB >= amountBMin, 'UniswapV2Router: INSUFFICIENT_B_AMOUNT');
     }
+
+    /**
+     * @dev function to remove liquidity with ETH
+     * @param token address of the token to remove liquidity
+     * @param liquidity amount of liquidity to remove
+     * @param amountTokenMin minimum amount of token
+     * @param amountETHMin minimum amount of ETH
+     * @param to address to send tokens to
+     * @param deadline deadline for the transaction
+     * @return amountToken amount of token
+     * @return amountETH amount of ETH
+     */
     function removeLiquidityETH(
         address token,
         uint liquidity,
@@ -138,6 +214,23 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         IWETH(WETH).withdraw(amountETH);
         TransferHelper.safeTransferETH(to, amountETH);
     }
+
+    /**
+     * @dev function to remove liquidity with permit
+     * @param tokenA address of the tokenA to remove liquidity
+     * @param tokenB address of the tokenB to remove liquidity
+     * @param liquidity amount of liquidity to remove
+     * @param amountAMin minimum amount of tokenA
+     * @param amountBMin minimum amount of tokenB
+     * @param to address to send tokens to
+     * @param deadline deadline for the transaction
+     * @param approveMax whether to approve the maximum amount of liquidity
+     * @param v signature parameter of the permit
+     * @param r signature parameter of the permit
+     * @param s signature parameter of the permit
+     * @return amountA amount of tokenA
+     * @return amountB amount of tokenB
+     */
     function removeLiquidityWithPermit(
         address tokenA,
         address tokenB,
@@ -153,6 +246,22 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         IUniswapV2Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
         (amountA, amountB) = removeLiquidity(tokenA, tokenB, liquidity, amountAMin, amountBMin, to, deadline);
     }
+
+    /**
+     * @dev function to remove liquidity with ETH with permit
+     * @param token address of the token to remove liquidity
+     * @param liquidity amount of liquidity to remove
+     * @param amountTokenMin minimum amount of token
+     * @param amountETHMin minimum amount of ETH
+     * @param to address to send tokens to
+     * @param deadline deadline for the transaction
+     * @param approveMax whether to approve the maximum amount of liquidity
+     * @param v signature parameter of the permit
+     * @param r signature parameter of the permit
+     * @param s signature parameter of the permit
+     * @return amountToken amount of token
+     * @return amountETH amount of ETH
+     */
     function removeLiquidityETHWithPermit(
         address token,
         uint liquidity,
@@ -169,6 +278,17 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
     }
 
     // **** REMOVE LIQUIDITY (supporting fee-on-transfer tokens) ****
+    /**
+     * @notice removeLiquidityETHSupportingFeeOnTransferTokens function to 
+     * remove liquidity with ETH
+     * @param token address of the token to remove liquidity
+     * @param liquidity amount of liquidity to remove
+     * @param amountTokenMin minimum amount of token
+     * @param amountETHMin minimum amount of ETH
+     * @param to address to send tokens to
+     * @param deadline deadline for the transaction
+     * @return amountETH amount of ETH
+     */
     function removeLiquidityETHSupportingFeeOnTransferTokens(
         address token,
         uint liquidity,
@@ -209,6 +329,12 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
 
     // **** SWAP ****
     // requires the initial amount to have already been sent to the first pair
+    /**
+     * @notice internal function to swap an exact amount of tokens for another
+     * @param amounts list of amounts to swap
+     * @param path list of addresses of tokens to swap
+     * @param _to address to send tokens to
+     */
     function _swap(uint[] memory amounts, address[] memory path, address _to) internal virtual {
         for (uint i; i < path.length - 1; i++) {
             (address input, address output) = (path[i], path[i + 1]);
@@ -221,6 +347,16 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
             );
         }
     }
+
+    /**
+     * @notice function to swap an exact amount of tokens for another
+     * @param amountIn amount of tokens to swap
+     * @param amountOutMin minimum amount of tokens to receive
+     * @param path list of addresses of tokens to swap
+     * @param to address to send tokens to
+     * @param deadline deadline for the transaction
+     * @return amounts list of amounts swapped
+     */
     function swapExactTokensForTokens(
         uint amountIn,
         uint amountOutMin,
@@ -240,7 +376,7 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         );
         
         TransferHelper.safeTransferFrom(
-            path[0], msg.sender, UniswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]
+            path[0], msg.sender, UniswapV2Library.pairFor(factory, path[0], path[1]), amounts[0].sub(treasuryFee)
         );
         _swap(amounts, path, to);
     }
@@ -275,6 +411,15 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         );
         _swap(amounts, path, to);
     }
+
+    /**
+     * @notice swapExactETHForTokens is a function that swaps exact amount of ETH for tokens
+     * @param amountOutMin is the minimum amount of tokens to be received
+     * @param path is the array of addresses of tokens to be swapped
+     * @param to is the address of the receiver
+     * @param deadline is the time after which the transaction will be reverted
+     * @return amounts is the array of amounts of tokens to be swapped
+     */
     function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline)
         external
         virtual
@@ -296,6 +441,17 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         assert(IWETH(WETH).transfer(UniswapV2Library.pairFor(factory, path[0], path[1]), amounts[0].sub(treasuryFee)));//
         _swap(amounts, path, to);
     }
+
+    /**
+     * @notice swapTokensForExactETH is a function that swaps tokens for exact amount of ETH
+     * @param amountOut is the amount of ETH to be received
+     * @param amountInMax is the maximum amount of tokens to be sent
+     * @param path is the array of addresses of tokens to be swapped
+     * @param to is the address of the receiver
+     * @param deadline is the time after which the transaction will be reverted
+     * @return amounts is the array of amounts of tokens to be swapped
+     * @dev path[0] is the address of the token to be swapped
+     */
     function swapTokensForExactETH(uint amountOut, uint amountInMax, address[] calldata path, address to, uint deadline)
         external
         virtual
@@ -306,12 +462,16 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         require(path[path.length - 1] == WETH, 'UniswapV2Router: INVALID_PATH');
         amounts = UniswapV2Library.getAmountsIn(factory, amountOut, path);
         require(amounts[0] <= amountInMax, 'UniswapV2Router: EXCESSIVE_INPUT_AMOUNT');
-        //reduce 2% fee from amount[0] and transfer to treasury address
+        // reduce 2% fee from amount[0] and transfer to treasury address
         uint treasuryFee = amounts[0].mul(2).div(100);
         require(treasuryFee != 0, 'UniswapV2Router: INSUFFICIENT_TREASURY_FEE');
         //transfering treasuryFee to treasury address
         address treasury = IUniswapV2Factory(factory).treasury();
-        IWETH(WETH).transfer(treasury, treasuryFee);
+        //transfer treasuryFee to treasury address
+        TransferHelper.safeTransferFrom(
+            path[0], msg.sender, treasury, treasuryFee
+        );
+        
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, UniswapV2Library.pairFor(factory, path[0], path[1]), amounts[0].sub(treasuryFee)
         );
@@ -319,6 +479,17 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         IWETH(WETH).withdraw(amounts[amounts.length - 1]);
         TransferHelper.safeTransferETH(to, amounts[amounts.length - 1]);
     }
+
+    /**
+     * @notice swapExactTokensForETH is a function that swaps exact amount of tokens for ETH
+     * @param amountIn is the amount of tokens to be sent
+     * @param amountOutMin is the minimum amount of ETH to be received
+     * @param path is the array of addresses of tokens to be swapped
+     * @param to is the address of the receiver
+     * @param deadline is the time after which the transaction will be reverted
+     * @return amounts is the array of amounts of tokens to be swapped
+     * @dev path[0] is the address of the token to be swapped
+     */
     function swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)
         external
         virtual
@@ -343,6 +514,15 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         IWETH(WETH).withdraw(amounts[amounts.length - 1]);
         TransferHelper.safeTransferETH(to, amounts[amounts.length - 1]);
     }
+
+    /**
+     * @notice swapETHForExactTokens is a function that swaps ETH for exact amount of tokens
+     * @param amountOut is the amount of tokens to be received
+     * @param path is the array of addresses of tokens to be swapped
+     * @param to is the address of the receiver
+     * @param deadline is the time after which the transaction will be reverted
+     * @return amounts is the array of amounts of tokens to be swapped
+     */
     function swapETHForExactTokens(uint amountOut, address[] calldata path, address to, uint deadline)
         external
         virtual
@@ -369,6 +549,11 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
     }
     // **** SWAP (supporting fee-on-transfer tokens) ****
     // requires the initial amount to have already been sent to the first pair
+    /**
+     * @notice _swapSupportingFeeOnTransferTokens is a function that swaps tokens supporting fee on transfer tokens
+     * @param path is the array of addresses of tokens to be swapped
+     * @param _to is the address of the receiver
+     */
     function _swapSupportingFeeOnTransferTokens(address[] memory path, address _to) internal virtual {
         for (uint i; i < path.length - 1; i++) {
             (address input, address output) = (path[i], path[i + 1]);
@@ -387,6 +572,16 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
             pair.swap(amount0Out, amount1Out, to, new bytes(0));
         }
     }
+
+    /**
+     * @notice swapExactTokensForTokensSupportingFeeOnTransferTokens is a function
+     * that swaps exact amount of tokens for tokens supporting fee on transfer tokens
+     * @param amountIn is the amount of tokens to be swapped
+     * @param amountOutMin is the minimum amount of tokens to be received
+     * @param path is the array of addresses of tokens to be swapped
+     * @param to is the address of the receiver
+     * @param deadline is the time after which the transaction will be reverted
+     */
     function swapExactTokensForTokensSupportingFeeOnTransferTokens(
         uint amountIn,
         uint amountOutMin,
@@ -404,6 +599,15 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
             'UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
         );
     }
+
+    /**
+     * @notice swapExactETHForTokensSupportingFeeOnTransferTokens is a function
+     * that swaps exact amount of ETH for tokens supporting fee on transfer tokens
+     * @param amountOutMin is the minimum amount of tokens to be received
+     * @param path is the array of addresses of tokens to be swapped
+     * @param to is the address of the receiver
+     * @param deadline is the time after which the transaction will be reverted
+     */
     function swapExactETHForTokensSupportingFeeOnTransferTokens(
         uint amountOutMin,
         address[] calldata path,
@@ -427,6 +631,16 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
             'UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
         );
     }
+
+    /**
+     * @notice swapExactTokensForETHSupportingFeeOnTransferTokens is a function
+     * that swaps exact amount of tokens for ETH supporting fee on transfer tokens
+     * @param amountIn is the amount of tokens to be swapped
+     * @param amountOutMin is the minimum amount of ETH to be received
+     * @param path is the array of addresses of tokens to be swapped
+     * @param to is the address of the receiver
+     * @param deadline is the time after which the transaction will be reverted
+     */
     function swapExactTokensForETHSupportingFeeOnTransferTokens(
         uint amountIn,
         uint amountOutMin,
@@ -451,10 +665,25 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
     }
 
     // **** LIBRARY FUNCTIONS ****
+    /**
+     * @notice quote is a function that returns the amount of output tokens
+     * that would be received for a given amount of input tokens
+     * @param amountA is the amount of input tokens
+     * @param reserveA is the amount of input tokens in the pool
+     * @param reserveB is the amount of output tokens in the pool
+     */
     function quote(uint amountA, uint reserveA, uint reserveB) public pure virtual override returns (uint amountB) {
         return UniswapV2Library.quote(amountA, reserveA, reserveB);
     }
 
+    /**
+     * @notice getAmountOut is a function that returns the amount of output tokens
+     * that would be received for a given amount of input tokens
+     * @param amountIn is the amount of input tokens
+     * @param reserveIn is the amount of input tokens in the pool
+     * @param reserveOut is the amount of output tokens in the pool
+     * @return amountOut is the amount of output tokens
+     */
     function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut)
         public
         pure
@@ -465,6 +694,14 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         return UniswapV2Library.getAmountOut(amountIn, reserveIn, reserveOut);
     }
 
+    /**
+     * @notice getAmountIn is a function that returns the amount of input tokens
+     * that would be needed to receive a given amount of output tokens
+     * @param amountOut is the amount of output tokens
+     * @param reserveIn is the amount of input tokens in the pool
+     * @param reserveOut is the amount of output tokens in the pool
+     * @return amountIn is the amount of input tokens
+     */
     function getAmountIn(uint amountOut, uint reserveIn, uint reserveOut)
         public
         pure
@@ -475,6 +712,13 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         return UniswapV2Library.getAmountIn(amountOut, reserveIn, reserveOut);
     }
 
+    /**
+     * @notice getAmountsOut is a function that returns the amount of output tokens
+     * that would be received for a given amount of input tokens
+     * @param amountIn is the amount of input tokens
+     * @param path is the array of addresses of tokens to be swapped
+     * @return amounts is the array of amounts of tokens to be received
+     */
     function getAmountsOut(uint amountIn, address[] memory path)
         public
         view
@@ -485,6 +729,13 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         return UniswapV2Library.getAmountsOut(factory, amountIn, path);
     }
 
+    /**
+     * @notice getAmountsIn is a function that returns the amount of input tokens
+     * that would be needed to receive a given amount of output tokens
+     * @param amountOut is the amount of output tokens
+     * @param path is the array of addresses of tokens to be swapped
+     * @return amounts is the array of amounts of tokens to be received
+     */
     function getAmountsIn(uint amountOut, address[] memory path)
         public
         view

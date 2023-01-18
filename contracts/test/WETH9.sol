@@ -36,7 +36,7 @@ contract WETH9 {
         emit Deposit(msg.sender, msg.value);
     }
     function withdraw(uint wad) public {
-        require(balanceOf[msg.sender] >= wad, "");
+        require(balanceOf[msg.sender] >= wad, "weth: withdraw amount exceeds balance");
         balanceOf[msg.sender] -= wad;
         msg.sender.transfer(wad);
         emit Withdrawal(msg.sender, wad);
@@ -56,14 +56,20 @@ contract WETH9 {
         return transferFrom(msg.sender, dst, wad);
     }
 
+    /**
+     * @dev Transfer tokens from one address to another
+     * @param src address The address which you want to send tokens from
+     * @param dst address The address which you want to transfer to
+     * @param wad uint the amount of tokens to be transferred
+     */
     function transferFrom(address src, address dst, uint wad)
         public
         returns (bool)
     {
-        require(balanceOf[src] >= wad, "");
+        require(balanceOf[src] >= wad, "WETH9: transfer amount exceeds balance");
 
         if (src != msg.sender && allowance[src][msg.sender] != uint(-1)) {
-            require(allowance[src][msg.sender] >= wad, "");
+            require(allowance[src][msg.sender] >= wad, "WEHT9: transfer amount exceeds allowance");
             allowance[src][msg.sender] -= wad;
         }
 

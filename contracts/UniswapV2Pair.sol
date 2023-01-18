@@ -7,27 +7,39 @@ import './libraries/UQ112x112.sol';
 import './interfaces/IERC20.sol';
 import './interfaces/IUniswapV2Factory.sol';
 import './interfaces/IUniswapV2Callee.sol';
-
+//suggest comments to whole contract
 contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
     using SafeMath  for uint;
     using UQ112x112 for uint224;
 
+    //MINIMUM_LIQUIDITY is the minimum liquidity that can be created in a pair
     uint public constant MINIMUM_LIQUIDITY = 10**3;
-    bytes4 private constant SELECTOR = bytes4(keccak256(bytes('transfer(address,uint256)')));
 
+    //SELECTOR is the selector for the transfer function
+    bytes4 private constant SELECTOR = bytes4(keccak256(bytes('transfer(address,uint256)')));
+    //factory is the address of the factory
     address public factory;
+    //token0 is the address of the first token
     address public token0;
+    //token1 is the address of the second token
     address public token1;
 
+    //reserve0 is the reserve of the first token
     uint112 private reserve0;           // uses single storage slot, accessible via getReserves
+    //reserve1 is the reserve of the second token          
     uint112 private reserve1;           // uses single storage slot, accessible via getReserves
+    //blockTimestampLast is the timestamp of the last liquidity event
     uint32  private blockTimestampLast; // uses single storage slot, accessible via getReserves
 
+    //price0CumulativeLast is the last price of the first token
     uint public price0CumulativeLast;
+    //price1CumulativeLast is the last price of the second token
     uint public price1CumulativeLast;
+    //kLast is the reserve0 * reserve1, as of immediately after the most recent liquidity event
     uint public kLast; // reserve0 * reserve1, as of immediately after the most recent liquidity event
 
     uint private unlocked = 1;
+    //lock is a modifier that prevents reentrancy
     modifier lock() {
         require(unlocked == 1, 'UniswapV2: LOCKED');
         unlocked = 0;
@@ -35,12 +47,24 @@ contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
         unlocked = 1;
     }
 
+    /**
+     * @notice getReserves returns the reserves of the pair
+     * @return _reserve0 is the reserve of the first token
+     * @return _reserve1 is the reserve of the second token
+     * @return _blockTimestampLast is the timestamp of the last liquidity event
+     */
     function getReserves() public view returns (uint112 _reserve0, uint112 _reserve1, uint32 _blockTimestampLast) {
         _reserve0 = reserve0;
         _reserve1 = reserve1;
         _blockTimestampLast = blockTimestampLast;
     }
 
+    /**
+     * @notice _safeTransfer transfers tokens to a given address
+     * @param token is the address of the token
+     * @param to is the address to send the tokens to
+     * @param value is the amount of tokens to send
+     */
     function _safeTransfer(address token, address to, uint value) private {
         (bool success, bytes memory data) = token.call(abi.encodeWithSelector(SELECTOR, to, value));
         require(success && (data.length == 0 || abi.decode(data, (bool))), 'UniswapV2: TRANSFER_FAILED');
@@ -58,11 +82,17 @@ contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
     );
     event Sync(uint112 reserve0, uint112 reserve1);
 
+    //constructor sets the factory
     constructor() public {
         factory = msg.sender;
     }
 
     // called once by the factory at time of deployment
+    /**
+     * @notice initialize initializes the pair
+     * @param _token0 is the address of the first token
+     * @param _token1 is the address of the second token
+     */
     function initialize(address _token0, address _token1) external {
         require(msg.sender == factory, 'UniswapV2: FORBIDDEN'); // sufficient check
         token0 = _token0;
@@ -70,6 +100,14 @@ contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
     }
 
     // update reserves and, on the first call per block, price accumulators
+    /**
+     * @notice _update updates the reserves and price accumulators
+     * @param balance0 is the balance of the first token
+     * @param balance1 is the balance of the second token
+     * @param _reserve0 is the reserve of the first token
+     * @param _reserve1 is the reserve of the second token
+     * @dev _update is called by the mint and burn functions
+     */
     function _update(uint balance0, uint balance1, uint112 _reserve0, uint112 _reserve1) private {
         require(balance0 <= uint112(-1) && balance1 <= uint112(-1), 'UniswapV2: OVERFLOW');
         uint32 blockTimestamp = uint32(block.timestamp % 2**32);
@@ -86,6 +124,12 @@ contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
     }
 
     // if fee is on, mint liquidity equivalent to 1/6th of the growth in sqrt(k)
+    /**
+     * @notice _mintFee mints liquidity equivalent to 1/6th of the growth in sqrt(k)
+     * @param _reserve0 is the reserve of the first token
+     * @param _reserve1 is the reserve of the second token
+     * @return feeOn is true if the fee is on
+     */
     function _mintFee(uint112 _reserve0, uint112 _reserve1) private returns (bool feeOn) {
         address feeTo = IUniswapV2Factory(factory).feeTo();
         feeOn = feeTo != address(0);
@@ -107,6 +151,11 @@ contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
     }
 
     // this low-level function should be called from a contract which performs important safety checks
+    /**
+     * @notice mint mints liquidity
+     * @param to is the address to send the liquidity to
+     * @return liquidity is the amount of liquidity minted
+     */
     function mint(address to) external lock returns (uint liquidity) {
         (uint112 _reserve0, uint112 _reserve1,) = getReserves(); // gas savings
         uint balance0 = IERC20(token0).balanceOf(address(this));
@@ -131,6 +180,12 @@ contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
     }
 
     // this low-level function should be called from a contract which performs important safety checks
+    /**
+     * @notice burn burns liquidity
+     * @param to is the address to send the tokens to
+     * @return amount0 is the amount of the first token burned
+     * @return amount1 is the amount of the second token burned
+     */
     function burn(address to) external lock returns (uint amount0, uint amount1) {
         (uint112 _reserve0, uint112 _reserve1,) = getReserves(); // gas savings
         address _token0 = token0;                                // gas savings
@@ -156,6 +211,13 @@ contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
     }
 
     // this low-level function should be called from a contract which performs important safety checks
+    /**
+     * @notice swap swaps tokens
+     * @param amount0Out is the amount of the first token to swap out
+     * @param amount1Out is the amount of the second token to swap out
+     * @param to is the address to send the tokens to
+     * @param data is the data to send to the callback
+     */
     function swap(uint amount0Out, uint amount1Out, address to, bytes calldata data) external lock {
         require(amount0Out > 0 || amount1Out > 0, 'UniswapV2: INSUFFICIENT_OUTPUT_AMOUNT');
         (uint112 _reserve0, uint112 _reserve1,) = getReserves(); // gas savings
@@ -199,6 +261,10 @@ contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
     }
 
     // force balances to match reserves
+    /**
+     * @notice skim skims tokens
+     * @param to is the address to send the tokens to
+     */
     function skim(address to) external lock {
         address _token0 = token0; // gas savings
         address _token1 = token1; // gas savings
@@ -207,6 +273,10 @@ contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
     }
 
     // force reserves to match balances
+    /**
+     * @notice sync syncs the reserves
+     * @dev sync is only callable by the factory
+     */
     function sync() external lock {
         _update(IERC20(token0).balanceOf(address(this)), IERC20(token1).balanceOf(address(this)), reserve0, reserve1);
     }

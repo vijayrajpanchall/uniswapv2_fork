@@ -21,6 +21,7 @@ contract UniswapV2ERC20 is IUniswapV2ERC20 {
     event Approval(address indexed owner, address indexed spender, uint value);
     event Transfer(address indexed from, address indexed to, uint value);
 
+    //constructor creates the domain separator
     constructor() public {
         uint chainId;
         assembly {
@@ -37,39 +38,85 @@ contract UniswapV2ERC20 is IUniswapV2ERC20 {
         );
     }
 
+    /**
+     * @notice _mint is a function that mints tokens
+     * @param to The address to mint to
+     * @param value The amount to mint
+     */
     function _mint(address to, uint value) internal {
         totalSupply = totalSupply.add(value);
         balanceOf[to] = balanceOf[to].add(value);
         emit Transfer(address(0), to, value);
     }
 
+    /**
+     * @notice _burn is a function that burns tokens
+     * @param from The address to burn from
+     * @param value The amount to burn
+     * @dev This function is internal and can only be called from other functions
+     */
     function _burn(address from, uint value) internal {
         balanceOf[from] = balanceOf[from].sub(value);
         totalSupply = totalSupply.sub(value);
         emit Transfer(from, address(0), value);
     }
 
+    /**
+     * @notice _approve is a function that approves a spender
+     * @param owner The address to approve from
+     * @param spender The address to approve to
+     * @param value The amount to approve
+     * @dev This function is internal and can only be called from other functions
+     */
     function _approve(address owner, address spender, uint value) private {
         allowance[owner][spender] = value;
         emit Approval(owner, spender, value);
     }
 
+    /**
+     * @notice _transfer is a function that transfers tokens
+     * @param from The address to transfer from
+     * @param to The address to transfer to 
+     * @param value The amount to transfer
+     * @dev This function is internal and can only be called from other functions
+     */
     function _transfer(address from, address to, uint value) private {
         balanceOf[from] = balanceOf[from].sub(value);
         balanceOf[to] = balanceOf[to].add(value);
         emit Transfer(from, to, value);
     }
 
+    /**
+     * @notice approve is a function that approves a spender
+     * @param spender The address to approve to
+     * @param value The amount to approve
+     * @dev This function is external and can be called from other contracts
+     */
     function approve(address spender, uint value) external returns (bool) {
         _approve(msg.sender, spender, value);
         return true;
     }
 
+    /**
+     * @notice transfer is a function that transfers tokens
+     * @param to The address to transfer to
+     * @param value The amount to transfer
+     * @dev This function is external and can be called from other contracts
+     * @return true if the transfer is successful
+     */
     function transfer(address to, uint value) external returns (bool) {
         _transfer(msg.sender, to, value);
         return true;
     }
 
+    /**
+     * @notice transferFrom is a function that transfers tokens from a spender
+     * @param from The address to transfer from
+     * @param to The address to transfer to
+     * @param value The amount to transfer
+     * @dev This function is external and can be called from other contracts
+     * @return true if the transfer is successful
+     */
     function transferFrom(address from, address to, uint value) external returns (bool) {
         if (allowance[from][msg.sender] != uint(-1)) {
             allowance[from][msg.sender] = allowance[from][msg.sender].sub(value);
@@ -78,6 +125,12 @@ contract UniswapV2ERC20 is IUniswapV2ERC20 {
         return true;
     }
 
+    /**
+     * @notice permit is a function that approves a spender
+     * @param owner The address to approve from
+     * @param spender The address to approve to
+     * @param value The amount to approve
+     */
     function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external {
         require(deadline >= block.timestamp, 'UniswapV2: EXPIRED');
         bytes32 digest = keccak256(
