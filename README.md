@@ -68,23 +68,38 @@ Expecting `router-test.js` result.
 ```bash
 
   Router
-    ✔ Should deploy (47ms)
-    ✔ Should add liquidity (1315ms)
-    ✔ Should add liquidity using ether
-    ✔ Should remove liquidity (1734ms)
-    ✔ Should remove liquidity in ETH pair
+    ✔ Should deploy (1341ms)
+    ✔ Should add liquidity (2150ms)
+    ✔ Should add liquidity using ether (534ms)
+    ✔ Should remove liquidity (301ms)
+    ✔ Should remove liquidity in ETH pair (376ms)
     ✔ should return correct amount from getAmountsOut without fee
-    ✔ should return correct amount from getAmountsIn without fee
-    ✔ Should return correct value from getAmountsOut without fee (1193ms)
-    ✔ Should return correct value from getAmountsIn without fee (657ms)
-    ✔ Should swap swapExactTokensForTokens (1915ms)
-    ✔ Should swap swapTokensForExactTokens in path[3] and check treasury balance (2543ms)
-    ✔ Should swap swapTokensForExactTokens (1818ms)
-    ✔ Should swap swapExactETHForTokens
-    ✔ Should swap swapTokensForExactETH
+    ✔ should return correct amount from getAmountsIn 
+without fee
+    ✔ Should return correct value from getAmountsOut 
+without fee (120ms)
+    ✔ Should return correct value from getAmountsIn without fee (115ms)
+    ✔ Should swap swapExactTokensForTokens (266ms)
+    ✔ Should transfer 2% of incoming token to treasury in swapExactTokensForTokens (306ms)
+    ✔ Should transfer 2% of outgoing token to treasury in swapExactTokensForTokens (338ms)
+    ✔ Should swap swapTokensForExactTokens (328ms)
+    ✔ Should transfer 2% of outgoing token to treasury in swapTokensForExactTokens (341ms)
+    ✔ Should transfer 2% of incoming token to treasury in swapTokensForExactTokens (324ms)
+    ✔ Should swap swapTokensForExactTokens in path[3] (779ms)
+    ✔ Should transfer 2% of incoming token to treasury in swapTokensForExactTokens in path[3] (431ms)     
+    ✔ Should transfer 2% of outgoing token to treasury in swapTokensForExactTokens in path[3] (440ms)     
+    ✔ Should swap swapExactETHForTokens (440ms)
+    ✔ Should transfer 2% of outgoing token to treasury in swapExactETHForTokens (273ms)
+    ✔ Should transfer 2% of incoming token to treasury in swapExactETHForTokens (285ms)
+    ✔ Should transfer 2% of incoming token to treasury in swapTokensForExactETH (299ms)
+    ✔ Should transfer 2% of outgoing token to treasury in swapTokensForExactETH (298ms)
+    ✔ Should transfer 2% of outgoing token to treasury in swapExactTokensForETH (297ms)
+    ✔ Should transfer 2% of incoming token to treasury in swapExactTokensForETH (291ms)
+    ✔ Should transfer 2% of incoming token to treasury in swapETHForExactTokens (300ms)
+    ✔ Should transfer 2% of outgoing token to treasury in swapETHForExactTokens (297ms)
 
 
-  14 passing (27s)
+  27 passing (11s)
 ```
 
 

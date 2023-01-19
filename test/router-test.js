@@ -236,6 +236,7 @@ describe.only("Router", function () {
         expect(amountIn[0].toString()).to.equal("112359550561797752809".toString());
     });
 
+    // swapExactTokensForTokens
     it("Should swap swapExactTokensForTokens", async () => {
         const { tokenAInstance, tokenBInstance, router, factory, accounts} = await loadFixture(deployTokenFixture);
          
@@ -337,6 +338,7 @@ describe.only("Router", function () {
         // expect(treasuryBalance.toString()).to.equal(ethers.utils.parseEther("2").toString());
     });
 
+    // swapTokensForExactTokens
     it("Should swap swapTokensForExactTokens", async () => {
         const { tokenAInstance, tokenBInstance, router, factory, accounts } = await loadFixture(deployTokenFixture);
 
@@ -568,6 +570,7 @@ describe.only("Router", function () {
         // expect(treasuryBalance.toString()).to.equal("1980000000000000000".toString());
     });
 
+    // swapExactETHForTokens
     it("Should swap swapExactETHForTokens", async () => {
         const { tokenAInstance, router, factory, accounts, weth } = await loadFixture(deployTokenFixture);
 
@@ -676,5 +679,217 @@ describe.only("Router", function () {
         const treasuryBalance = await tokenAInstance.balanceOf(treasury);
         expect(treasuryBalance.toString()).to.equal("1818181818181818181".toString());
     });
+
+    //swapTokensForExactETH
+    it("Should transfer 2% of incoming token to treasury in swapTokensForExactETH", async () => {
+        const { tokenAInstance, router, factory, accounts, weth } = await loadFixture(deployTokenFixture);
+
+        const tx3 = await router.addLiquidityETH(
+            tokenAInstance.address,
+            ethers.utils.parseEther("1000"),
+            0,
+            0,
+            accounts[0].address,
+            ethers.constants.MaxUint256,
+            {
+                value: ethers.utils.parseEther("1000")
+            }
+        );
+        await tx3.wait();
+
+        //set updateTreasuryWallet 
+        await factory.updateTreasuryWallet(accounts[3].address);
+
+        const tx5 = await router.swapTokensForExactETH(
+            ethers.utils.parseEther("100"),
+            ethers.utils.parseEther("1000"),
+            [tokenAInstance.address, weth.address],
+            accounts[1].address,
+            ethers.constants.MaxUint256
+        );
+        await tx5.wait();
+
+        const treasury = await factory.treasury();
+
+        const treasuryBalance = await tokenAInstance.balanceOf(treasury);
+        expect(treasuryBalance.toString()).to.equal("2222222222222222222".toString());
+    });
+
+    it("Should transfer 2% of outgoing token to treasury in swapTokensForExactETH", async () => {
+        const { tokenAInstance, router, factory, accounts, weth } = await loadFixture(deployTokenFixture);
+
+        const tx3 = await router.addLiquidityETH(
+            tokenAInstance.address,
+            ethers.utils.parseEther("1000"),
+            0,
+            0,
+            accounts[0].address,
+            ethers.constants.MaxUint256,
+            {
+                value: ethers.utils.parseEther("1000")
+            }
+        );
+        await tx3.wait();
+
+        //set updateTreasuryWallet 
+        await factory.updateTreasuryWallet(accounts[3].address);
+
+        const tx5 = await router.swapTokensForExactETH(
+            ethers.utils.parseEther("100"),
+            ethers.utils.parseEther("1000"),
+            [tokenAInstance.address, weth.address],
+            accounts[1].address,
+            ethers.constants.MaxUint256
+        );
+        await tx5.wait();
+
+        const treasury = await factory.treasury();
+
+        const treasuryBalance = await weth.balanceOf(treasury);
+        expect(treasuryBalance.toString()).to.equal(ethers.utils.parseEther("2").toString());
+    });
+
+    // swapExactTokensForETH
+    it("Should transfer 2% of outgoing token to treasury in swapExactTokensForETH", async () => {
+        const { tokenAInstance, router, factory, accounts, weth } = await loadFixture(deployTokenFixture);
+
+        const tx3 = await router.addLiquidityETH(
+            tokenAInstance.address,
+            ethers.utils.parseEther("1000"),
+            0,
+            0,
+            accounts[0].address,
+            ethers.constants.MaxUint256,
+            {
+                value: ethers.utils.parseEther("1000")
+            }
+        );
+        await tx3.wait();
+
+        //set updateTreasuryWallet 
+        await factory.updateTreasuryWallet(accounts[3].address);
+
+        const tx5 = await router.swapExactTokensForETH(
+            ethers.utils.parseEther("100"),
+            0,
+            [tokenAInstance.address, weth.address],
+            accounts[1].address,
+            ethers.constants.MaxUint256
+        );
+        await tx5.wait();
+
+        const treasury = await factory.treasury();
+
+        const treasuryBalance = await tokenAInstance.balanceOf(treasury);
+        expect(treasuryBalance.toString()).to.equal("2000000000000000000".toString());
+    });
+
+    it("Should transfer 2% of incoming token to treasury in swapExactTokensForETH", async () => {
+        const { tokenAInstance, router, factory, accounts, weth } = await loadFixture(deployTokenFixture);
+
+        const tx3 = await router.addLiquidityETH(
+            tokenAInstance.address,
+            ethers.utils.parseEther("1000"),
+            0,
+            0,
+            accounts[0].address,
+            ethers.constants.MaxUint256,
+            {
+                value: ethers.utils.parseEther("1000")
+            }
+        );
+        await tx3.wait();
+
+        //set updateTreasuryWallet 
+        await factory.updateTreasuryWallet(accounts[3].address);
+
+        const tx5 = await router.swapExactTokensForETH(
+            ethers.utils.parseEther("100"),
+            0,
+            [tokenAInstance.address, weth.address],
+            accounts[1].address,
+            ethers.constants.MaxUint256
+        );
+        await tx5.wait();
+
+        const treasury = await factory.treasury();
+
+        const treasuryBalance = await weth.balanceOf(treasury);
+        expect(treasuryBalance.toString()).to.equal("1818181818181818181".toString());
+    });
+
+    //swapETHForExactTokens
+    it("Should transfer 2% of incoming token to treasury in swapETHForExactTokens", async () => {
+        const { tokenAInstance, router, factory, accounts, weth } = await loadFixture(deployTokenFixture);
+
+        const tx3 = await router.addLiquidityETH(
+            tokenAInstance.address,
+            ethers.utils.parseEther("1000"),
+            0,
+            0,
+            accounts[0].address,
+            ethers.constants.MaxUint256,
+            {
+                value: ethers.utils.parseEther("100")
+            }
+        );
+        await tx3.wait();
+
+        //set updateTreasuryWallet 
+        await factory.updateTreasuryWallet(accounts[3].address);
+
+        const tx5 = await router.swapETHForExactTokens(
+            ethers.utils.parseEther("10"),
+            [weth.address, tokenAInstance.address],
+            accounts[1].address,
+            ethers.constants.MaxUint256,
+            {
+                value: ethers.utils.parseEther("10")
+            }
+        );
+        await tx5.wait();
+
+        const treasury = await factory.treasury();
+
+        const treasuryBalance = await weth.balanceOf(treasury);
+        expect(treasuryBalance.toString()).to.equal("20202020202020202".toString());
+    });
+
+    it("Should transfer 2% of outgoing token to treasury in swapETHForExactTokens", async () => {
+        const { tokenAInstance, router, factory, accounts, weth } = await loadFixture(deployTokenFixture);
+
+        const tx3 = await router.addLiquidityETH(
+            tokenAInstance.address,
+            ethers.utils.parseEther("1000"),
+            0,
+            0,
+            accounts[0].address,
+            ethers.constants.MaxUint256,
+            {
+                value: ethers.utils.parseEther("100")
+            }
+        );
+        await tx3.wait();
+
+        //set updateTreasuryWallet 
+        await factory.updateTreasuryWallet(accounts[3].address);
+
+        const tx5 = await router.swapETHForExactTokens(
+            ethers.utils.parseEther("10"),
+            [weth.address, tokenAInstance.address],
+            accounts[1].address,
+            ethers.constants.MaxUint256,
+            {
+                value: ethers.utils.parseEther("10")
+            }
+        );
+        await tx5.wait();
+
+        const treasury = await factory.treasury();
+
+        const treasuryBalance = await tokenAInstance.balanceOf(treasury);
+        expect(treasuryBalance.toString()).to.equal("200000000000000000".toString());
+    });
+
 
 });

@@ -366,13 +366,13 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
     ) external virtual override ensure(deadline) returns (uint[] memory amounts) {
         amounts = UniswapV2Library.getAmountsOut(factory, amountIn, path);
         require(amounts[amounts.length - 1] >= amountOutMin, 'UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
-        //reduce 2% fee from amount[0] and transfer to treasury address
-        uint treasuryFee = amounts[0].mul(2).div(100);
-        require(treasuryFee != 0, 'UniswapV2Router: INSUFFICIENT_TREASURY_FEE');
-        //transfering treasuryFee to treasury address
-        address treasury = IUniswapV2Factory(factory).treasury();
+
+        //calculate treasury fee
+        uint treasuryFee = treasuryFee(amounts[0]);
+        
+        //transfering treasury fee to treasury wallet
         TransferHelper.safeTransferFrom(
-            path[0], msg.sender, treasury, treasuryFee
+            path[0], msg.sender, IUniswapV2Factory(factory).treasury(), treasuryFee
         );
         
         TransferHelper.safeTransferFrom(
@@ -399,12 +399,13 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
     ) external virtual override ensure(deadline) returns (uint[] memory amounts) {
         amounts = UniswapV2Library.getAmountsIn(factory, amountOut, path);
         require(amounts[0] <= amountInMax, 'UniswapV2Router: EXCESSIVE_INPUT_AMOUNT');
-        uint treasuryFee = amounts[0].mul(2).div(100);
-        require(treasuryFee != 0, "treasury fee is 0");
-        //transfering treasuryFee to treasury address
-        address treasury = IUniswapV2Factory(factory).treasury();
+        
+        //calculate treasury fee
+        uint treasuryFee = treasuryFee(amounts[0]);
+        
+        //transfering treasury fee to treasury wallet
         TransferHelper.safeTransferFrom(
-            path[0], msg.sender, treasury, treasuryFee
+            path[0], msg.sender, IUniswapV2Factory(factory).treasury(), treasuryFee
         );
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, UniswapV2Library.pairFor(factory, path[0], path[1]), amounts[0].sub(treasuryFee)
@@ -432,12 +433,12 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         amounts = UniswapV2Library.getAmountsOut(factory, msg.value, path);
         require(amounts[amounts.length - 1] >= amountOutMin, 'UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
         IWETH(WETH).deposit{value: amounts[0]}();
+
         // reduce 2% fee from amount[0] and transfer to treasury address
-        uint treasuryFee = amounts[0].mul(2).div(100);
-        require(treasuryFee != 0, 'UniswapV2Router: INSUFFICIENT_TREASURY_FEE');
-        //transfering treasuryFee to treasury address
-        address treasury = IUniswapV2Factory(factory).treasury();
-        IWETH(WETH).transfer(treasury, treasuryFee);
+        uint treasuryFee = treasuryFee(amounts[0]);
+        //transfering treasury fee to treasury wallet
+        IWETH(WETH).transfer(IUniswapV2Factory(factory).treasury(), treasuryFee);
+
         assert(IWETH(WETH).transfer(UniswapV2Library.pairFor(factory, path[0], path[1]), amounts[0].sub(treasuryFee)));//
         _swap(amounts, path, to);
     }
@@ -463,21 +464,18 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         amounts = UniswapV2Library.getAmountsIn(factory, amountOut, path);
         require(amounts[0] <= amountInMax, 'UniswapV2Router: EXCESSIVE_INPUT_AMOUNT');
         // reduce 2% fee from amount[0] and transfer to treasury address
-        uint treasuryFee = amounts[0].mul(2).div(100);
-        require(treasuryFee != 0, 'UniswapV2Router: INSUFFICIENT_TREASURY_FEE');
+        uint treasuryFee = treasuryFee(amounts[0]);
         //transfering treasuryFee to treasury address
-        address treasury = IUniswapV2Factory(factory).treasury();
-        //transfer treasuryFee to treasury address
         TransferHelper.safeTransferFrom(
-            path[0], msg.sender, treasury, treasuryFee
+            path[0], msg.sender, IUniswapV2Factory(factory).treasury(), treasuryFee
         );
         
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, UniswapV2Library.pairFor(factory, path[0], path[1]), amounts[0].sub(treasuryFee)
         );
         _swap(amounts, path, address(this));
-        IWETH(WETH).withdraw(amounts[amounts.length - 1]);
-        TransferHelper.safeTransferETH(to, amounts[amounts.length - 1]);
+        IWETH(WETH).withdraw(amounts[amounts.length - 1] - treasuryFee);
+        TransferHelper.safeTransferETH(to, amounts[amounts.length - 1] - treasuryFee);
     }
 
     /**
@@ -501,18 +499,17 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         amounts = UniswapV2Library.getAmountsOut(factory, amountIn, path);
         require(amounts[amounts.length - 1] >= amountOutMin, 'UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
         //reduce 2% fee from amount[0] and transfer to treasury address
-        uint treasuryFee = amounts[0].mul(2).div(100);
+        uint treasuryFee = treasuryFee(amounts[0]);
         //transfering treasuryFee to treasury address
-
-        address treasury = IUniswapV2Factory(factory).treasury();
-
-        IWETH(WETH).transfer(treasury, treasuryFee);
+        TransferHelper.safeTransferFrom(
+            path[0], msg.sender, IUniswapV2Factory(factory).treasury(), treasuryFee
+        );
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, UniswapV2Library.pairFor(factory, path[0], path[1]), amounts[0].sub(treasuryFee)
         );
         _swap(amounts, path, address(this));
-        IWETH(WETH).withdraw(amounts[amounts.length - 1]);
-        TransferHelper.safeTransferETH(to, amounts[amounts.length - 1]);
+        IWETH(WETH).withdraw(amounts[amounts.length - 1] - treasuryFee);
+        TransferHelper.safeTransferETH(to, amounts[amounts.length - 1] - treasuryFee);
     }
 
     /**
@@ -536,12 +533,10 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         require(amounts[0] <= msg.value, 'UniswapV2Router: EXCESSIVE_INPUT_AMOUNT');
         IWETH(WETH).deposit{value: amounts[0]}();
         //reduce 2% fee from amount[0] and transfer to treasury address
-        uint treasuryFee = amounts[0].mul(2).div(100);
+        uint treasuryFee = treasuryFee(amounts[0]);
         //transfering treasuryFee to treasury address
-        address treasury = IUniswapV2Factory(factory).treasury();
-        TransferHelper.safeTransferFrom(
-            path[0], msg.sender, treasury, treasuryFee
-        );
+        //transfering treasury fee to treasury wallet
+        IWETH(WETH).transfer(IUniswapV2Factory(factory).treasury(), treasuryFee);
         assert(IWETH(WETH).transfer(UniswapV2Library.pairFor(factory, path[0], path[1]), amounts[0].sub(treasuryFee)));
         _swap(amounts, path, to);
         // refund dust eth, if any
@@ -744,5 +739,16 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         returns (uint[] memory amounts)
     {
         return UniswapV2Library.getAmountsIn(factory, amountOut, path);
+    }
+
+    /**
+     * @notice treasuryFee is a function that returns the amount of tokens
+     * that would be received for a given amount of input tokens
+     * @param amount is the amount of tokens to be swapped
+     */
+    function treasuryFee(uint amount) private pure returns (uint) {
+        uint fee =  amount.mul(2).div(100);
+        require(fee != 0, "UniswapV2Router: INSUFFICIENT_TREASURY_FEE");
+        return fee;
     }
 }

@@ -1,12 +1,13 @@
 {
-  "name": "uniswap-v2",
+  "name": "uniswap-v2-task",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "UniswapV2Factory.sol",
   "keywords": [],
-  "author": "",
+  "author": "Vijay Raj Pancha",
   "license": "ISC",
   "devDependencies": {
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.7",
     "@nomiclabs/hardhat-etherscan": "^3.1.5",
     "@nomiclabs/hardhat-waffle": "^2.0.3",
     "@types/chai": "^4.2.6",
@@ -14,32 +15,15 @@
     "@uniswap/lib": "^4.0.1-alpha",
     "@uniswap/v2-core": "^1.0.1",
     "chai": "^4.2.0",
-    "ethereum-waffle": "^2.4.1",
+    "ethereum-waffle": "^3.4.4",
     "ethereumjs-util": "^6.2.0",
     "ethers-utils": "^2.1.11",
     "hardhat": "^2.12.6",
     "mocha": "^6.2.2",
-    "ncp": "^2.0.0",
-    "prettier": "^1.19.1",
-    "rimraf": "^3.0.0",
-    "solc": "0.6.6",
-    "ts-node": "^8.5.4",
-    "typescript": "^3.7.3"
+    "prettier": "^1.19.1"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.6.0",
     "dotenv": "^16.0.1"
-  },
-  "scripts": {
-    "lint": "yarn prettier ./test/*.ts --check",
-    "lint:fix": "yarn prettier ./test/*.ts --write",
-    "clean": "rimraf ./build/",
-    "copy-v1-artifacts": "ncp ./buildV1 ./build",
-    "precompile": "yarn clean",
-    "compile": "hardhat compile",
-    "postcompile": "yarn copy-v1-artifacts",
-    "pretest": "yarn compile",
-    "test": "mocha",
-    "prepublishOnly": "yarn test"
   }
 }
