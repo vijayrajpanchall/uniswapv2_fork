@@ -2,28 +2,32 @@
   "name": "uniswap-v2-task",
   "version": "1.0.0",
   "description": "",
-  "main": "UniswapV2Factory.sol",
-  "keywords": [],
-  "author": "Vijay Raj Pancha",
+  "main": "hardhat.config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/srvsmn-rapidinnovation/Dex-task.git"
+  },
+  "author": "Vijay Raj Panchal ",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/srvsmn-rapidinnovation/Dex-task/issues"
+  },
+  "homepage": "https://github.com/srvsmn-rapidinnovation/Dex-task#readme",
   "devDependencies": {
-    "@nomicfoundation/hardhat-network-helpers": "^1.0.7",
+    "@nomicfoundation/hardhat-chai-matchers": "^1.0.5",
+    "@nomicfoundation/hardhat-toolbox": "^2.0.1",
+    "@nomiclabs/hardhat-ethers": "^2.2.2",
     "@nomiclabs/hardhat-etherscan": "^3.1.5",
-    "@nomiclabs/hardhat-waffle": "^2.0.3",
-    "@types/chai": "^4.2.6",
-    "@types/mocha": "^5.2.7",
     "@uniswap/lib": "^4.0.1-alpha",
     "@uniswap/v2-core": "^1.0.1",
-    "chai": "^4.2.0",
-    "ethereum-waffle": "^3.4.4",
-    "ethereumjs-util": "^6.2.0",
-    "ethers-utils": "^2.1.11",
-    "hardhat": "^2.12.6",
-    "mocha": "^6.2.2",
-    "prettier": "^1.19.1"
-  },
-  "dependencies": {
-    "@openzeppelin/contracts": "^4.6.0",
-    "dotenv": "^16.0.1"
+    "dotenv": "^16.0.3",
+    "ethers": "^5.7.2",
+    "hardhat": "^2.12.6"
   }
 }
