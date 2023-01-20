@@ -477,7 +477,7 @@ describe.only("Router", function () {
         expect(account1_CtokenBalance.toString()).to.equal("97020000000000000000".toString());
     });
 
-    it("Should transfer 2% of incoming token to treasury in swapTokensForExactTokens in path[3]", async () => {
+    it.only("Should transfer 2% of incoming token to treasury in swapTokensForExactTokens in path[3]", async () => {
         const { tokenAInstance, tokenBInstance, tokenCInstance, router, factory, accounts } = await loadFixture(deployTokenFixture);
         
         const tx3 = await router.addLiquidity(
@@ -505,10 +505,11 @@ describe.only("Router", function () {
         await tx4.wait();
 
         await factory.updateTreasuryWallet(accounts[1].address);
-
+        const amountIn = router.getAmountsOut(ethers.utils.parseEther("1000"), [tokenAInstance.address, tokenBInstance.address, tokenCInstance.address]);
+        console.log("amountIn ",amountIn);
         const tx5 = await router.swapTokensForExactTokens(
-            ethers.utils.parseEther("100"),
-            ethers.utils.parseEther("1000"),
+            ethers.utils.parseEther("100"), //output token  - token C
+            ethers.utils.parseEther("1000"),  //input - token A
             [tokenAInstance.address, tokenBInstance.address, tokenCInstance.address],
             accounts[2].address,
             ethers.constants.MaxUint256
@@ -518,6 +519,10 @@ describe.only("Router", function () {
         const treasury = await factory.treasury();
 
         const treasuryBalance = await tokenCInstance.balanceOf(treasury);
+        const userBalance = await tokenCInstance.balanceOf(accounts[2].address);
+        console.log(userBalance);
+        const total = userBalance.add(treasuryBalance);
+        console.log(total);
         expect(treasuryBalance.toString()).to.equal("1980000000000000000".toString());
     });
 

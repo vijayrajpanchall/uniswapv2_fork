@@ -14,19 +14,20 @@
 This project is fork of uniswapV2 in with addition fee of 4% is taken from each trade, with 2% coming from the incoming token and 2% coming from the outgoing token. For example, if a user swaps $100 worth of BUSD for USDC, they will receive 96 dollars worth of USDC, and the exchange's reward wallet will receive $2 worth of BUSD and $2 worth of USDC.
 
 ## For achiving this task I have done the following:
-1. Modified the UniswapV2Router02.sol contract to add a fee of 2% for outgoing token.
-    * Modified all the swap functions to add a fee of 2% for outgoing token.
-    *  Added a treasury wallet where the fees are sent to.
 
-2. Modified UniswapV2Pair.sol contract to add a fee of 2% to each trade, with 2% for incoming token.
+1. UniswapV2Router02.sol
+    * Modified all the swap functions to add a fee of 2% for outgoing token. (98% of the outgoing token will be sent to the recipient and 2% will be sent to the treasury wallet.)
+    * Fee will be sent to the treasury wallet.
+2. UniswapV2Pair.sol
     * Modified the _swap function to add a fee of 2% for incoming token.
-    * Added a treasury wallet where the fees are sent to.
+    * Fee will be sent to the treasury wallet.
 
-3. Modified UniswapV2Factory.sol to add a treasury wallet where the fees are sent to.
+3. UniswapV2Factory.sol
     * Added a treasury wallet where the fees are sent to.
     * Added a function to set the treasury wallet.
+    * Added a function to update treasury wallet.
 
-4. Modified UniswapV2Library.sol to remove liquidity fee from all transactions.
+4. UniswapV2Library.sol
     *  Modified the getAmountsOut function to remove liquidity fee from all transactions.
     * Modified the getAmountsIn function to remove liquidity fee from all transactions.
     * Modified the getAmountIn and getAmountOut functions to remove liquidity fee from all transactions.
