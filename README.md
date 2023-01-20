@@ -6,20 +6,30 @@
 - [Technologies Used](#technologies-used)
 - [Folder Structure](#a-typical-top-level-directory-layout)
 - [Install and Run](#install-and-run)
+- [Test](#test)
+
 
 ## Project Description
 
 This project is fork of uniswapV2 in with addition fee of 4% is taken from each trade, with 2% coming from the incoming token and 2% coming from the outgoing token. For example, if a user swaps $100 worth of BUSD for USDC, they will receive 96 dollars worth of USDC, and the exchange's reward wallet will receive $2 worth of BUSD and $2 worth of USDC.
 
-## About the task 
-For achiving this task 
+## For achiving this task I have done the following:
 1. Modified the UniswapV2Router02.sol contract to add a fee of 2% for outgoing token.
+    * Modified all the swap functions to add a fee of 2% for outgoing token.
+    *  Added a treasury wallet where the fees are sent to.
 
 2. Modified UniswapV2Pair.sol contract to add a fee of 2% to each trade, with 2% for incoming token.
+    * Modified the _swap function to add a fee of 2% for incoming token.
+    * Added a treasury wallet where the fees are sent to.
 
 3. Modified UniswapV2Factory.sol to add a treasury wallet where the fees are sent to.
+    * Added a treasury wallet where the fees are sent to.
+    * Added a function to set the treasury wallet.
 
 4. Modified UniswapV2Library.sol to remove liquidity fee from all transactions.
+    *  Modified the getAmountsOut function to remove liquidity fee from all transactions.
+    * Modified the getAmountsIn function to remove liquidity fee from all transactions.
+    * Modified the getAmountIn and getAmountOut functions to remove liquidity fee from all transactions.
 
 ## Technologies Used
 
